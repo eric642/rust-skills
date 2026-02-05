@@ -46,9 +46,73 @@ AI (Rust Skills 使用):
 
 ## インストール
 
-### 方法1：Marketplace（推奨）
+Rust Skills は2つのインストールモードをサポートしています：
 
-Claude Code プラグインマーケットプレイスから2ステップでインストール：
+- **Plugin モード**（Claude Code）：hooks、agents、自動メタ認知トリガーを含む完全機能
+- **Skills-only モード**：skills をサポートする任意のコーディングエージェントで動作（Claude Code、Vercel AI など）
+
+---
+
+### Skills-only インストール（推奨）
+
+最もシンプルな方法。Claude Code、[Vercel `add-skills`](https://github.com/nicepkg/add-skills) など、**skills をサポートする任意のコーディングエージェント**で動作します。
+
+Skills には**インラインフォールバックロジック**が組み込まれており、エージェントファイルが利用できない場合、組み込みツール（actionbook、agent-browser、WebFetch）を使用して直接実行します。
+
+#### 方法 A：NPX（最も簡単）
+
+```bash
+npx skills add ZhangHanDong/rust-skills
+```
+
+#### 方法 B：CoWork CLI
+
+[CoWork](https://crates.io/crates/cowork)（Rust ベースの skills 管理ツール）を使用してインストール：
+
+```bash
+# CoWork をインストール
+cargo install cowork
+
+# 方法 1：直接インストール
+cowork install ZhangHanDong/rust-skills
+
+# 方法 2：設定ファイルベースのインストール（チーム向け推奨）
+cowork config init                    # .cowork/Skills.toml を作成
+# Skills.toml を編集して rust-skills を追加（下記参照）
+cowork config install                 # 設定された全 skills をインストール
+```
+
+**Skills.toml 設定例：**
+
+```toml
+[project]
+name = "my-rust-project"
+
+[skills.install]
+rust-skills = "ZhangHanDong/rust-skills"
+
+[security]
+trusted_authors = ["ZhangHanDong"]
+```
+
+> CoWork（短縮形 `co`）はバージョン管理、依存関係解決、lock ファイル、セキュリティ監査を提供します。詳細は [CoWork ドキュメント](https://crates.io/crates/cowork) を参照してください。
+
+#### 方法 C：手動コピー
+
+```bash
+git clone https://github.com/ZhangHanDong/rust-skills.git
+cp -r rust-skills/skills/* ~/.claude/skills/
+```
+
+> **注意**：Skills-only モードには hooks が含まれないため、メタ認知は自動トリガーされません。`/rust-router` または特定の skills を手動で呼び出せます。バックグラウンドエージェントは自動的にインライン実行にフォールバックします。
+
+---
+
+### Claude Code Plugin インストール（完全機能）
+
+hooks、バックグラウンドエージェント、自動メタ認知トリガーを含む完全な体験を求める **Claude Code ユーザー**向け。
+
+#### 方法 A：Marketplace
 
 ```bash
 # ステップ 1: marketplace を追加
@@ -60,19 +124,7 @@ Claude Code プラグインマーケットプレイスから2ステップでイ�
 
 > **注意**：ステップ 1 は marketplace（プラグインソース）を追加するだけです。ステップ 2 で実際に rust-skills プラグインをインストールし、すべての機能を有効にします。
 
-### 方法2：NPX
-
-npx を使用してインストール：
-
-```bash
-npx skills add ZhangHanDong/rust-skills
-```
-
-> ⚠️ **注意**：NPX は skills のみをインストールします。Rust-skills は **プラグインアーキテクチャ** を採用しており、完全な機能には agents、commands、hooks が必要です。完全な体験のためには、方法1（Marketplace）または方法3（完全プラグイン）をお勧めします。
-
-### 方法3：完全プラグイン
-
-この方法は **hooks を含むすべての機能**を有効にし、メタ認知を自動的にトリガーします。
+#### 方法 B：完全プラグイン（ローカル）
 
 ```bash
 # リポジトリをクローン
@@ -82,27 +134,18 @@ git clone https://github.com/ZhangHanDong/rust-skills.git
 claude --plugin-dir /path/to/rust-skills
 ```
 
-### 方法4：Skills のみ
-
-この方法は skills のみをインストールし、hooks は含まれません。skills を手動で呼び出す必要があります。
-
-```bash
-# クローンして skills をコピー
-git clone https://github.com/ZhangHanDong/rust-skills.git
-cp -r rust-skills/skills/* ~/.claude/skills/
-```
-
-> ⚠️ **注意**：hooks がない場合、メタ認知は自動的にトリガーされません。`/rust-router` または特定の skills を手動で呼び出す必要があります。
+---
 
 ### 機能比較
 
-| 機能 | Marketplace | NPX | 完全プラグイン | Skills のみ |
-|------|-------------|-----|----------------|-------------|
-| 全 31 Skills | ✅ | ✅ | ✅ | ✅ |
-| 自動メタ認知トリガー | ✅ | ✅ | ✅ | ❌ |
-| Hook ルーティング | ✅ | ✅ | ✅ | ❌ |
-| バックグラウンドエージェント | ✅ | ✅ | ✅ | ✅ |
-| 簡単な更新 | ✅ | ✅ | ❌ | ❌ |
+| 機能 | Plugin（Marketplace） | Plugin（ローカル） | Skills-only（NPX/CoWork/手動） |
+|------|---------------------|-------------------|-------------------------------|
+| 全 31 Skills | ✅ | ✅ | ✅ |
+| 自動メタ認知トリガー | ✅ | ✅ | ❌（手動呼び出し） |
+| Hook ルーティング | ✅ | ✅ | ❌ |
+| バックグラウンドエージェント | ✅ | ✅ | ✅（インラインフォールバック） |
+| 簡単な更新 | ✅ | ❌ | ✅（NPX/CoWork） |
+| 他のエージェントとの互換性 | ❌ | ❌ | ✅ |
 
 ### 権限設定
 

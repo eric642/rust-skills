@@ -6,13 +6,13 @@ argument-hint: "<rust_question>"
 
 # Meta-Cognition Parallel Analysis (Experimental)
 
-> **Status:** Experimental | **Version:** 0.1.0
+> **Status:** Experimental | **Version:** 0.2.0 | **Last Updated:** 2025-01-27
 >
-> This skill tests parallel three-layer cognitive analysis using `context: fork`.
+> This skill tests parallel three-layer cognitive analysis.
 
 ## Concept
 
-Instead of sequential analysis, this skill launches three parallel subagents - one for each cognitive layer - then synthesizes their results.
+Instead of sequential analysis, this skill launches three parallel analyzers - one for each cognitive layer - then synthesizes their results.
 
 ```
 User Question
@@ -23,14 +23,12 @@ User Question
 │                  (Coordinator)                       │
 └─────────────────────────────────────────────────────┘
      │
-     ├─── Task(fork) ──► layer1-analyzer ──► L1 Result
-     │                   (Language Mechanics)
+     ├─── Layer 1 ──► Language Mechanics ──► L1 Result
      │
-     ├─── Task(fork) ──► layer2-analyzer ──► L2 Result
-     │                   (Design Choices)         ├── Parallel
-     │                                            │
-     └─── Task(fork) ──► layer3-analyzer ──► L3 Result
-                         (Domain Constraints)
+     ├─── Layer 2 ──► Design Choices     ──► L2 Result
+     │                                            ├── Parallel (Agent Mode)
+     │                                            │   or Sequential (Inline)
+     └─── Layer 3 ──► Domain Constraints ──► L3 Result
      │
      ▼
 ┌─────────────────────────────────────────────────────┐
@@ -53,7 +51,20 @@ Domain-Correct Architectural Solution
 /meta-parallel 我的交易系统报 E0382 错误，应该用 clone 吗？
 ```
 
-## Execution Instructions
+## Execution Mode Detection
+
+**CRITICAL: Check agent file availability first to determine execution mode.**
+
+Try to read layer analyzer files:
+- `../../agents/layer1-analyzer.md`
+- `../../agents/layer2-analyzer.md`
+- `../../agents/layer3-analyzer.md`
+
+---
+
+## Agent Mode (Plugin Install) - Parallel Execution
+
+**When all layer analyzer files exist at `../../agents/`:**
 
 ### Step 1: Parse User Query
 
@@ -72,21 +83,21 @@ Read agent files, then launch in parallel:
 Task(
   subagent_type: "general-purpose",
   run_in_background: true,
-  prompt: <content of agents/layer1-analyzer.md>
+  prompt: <content of ../../agents/layer1-analyzer.md>
           + "\n\n## User Query\n" + $ARGUMENTS
 )
 
 Task(
   subagent_type: "general-purpose",
   run_in_background: true,
-  prompt: <content of agents/layer2-analyzer.md>
+  prompt: <content of ../../agents/layer2-analyzer.md>
           + "\n\n## User Query\n" + $ARGUMENTS
 )
 
 Task(
   subagent_type: "general-purpose",
   run_in_background: true,
-  prompt: <content of agents/layer3-analyzer.md>
+  prompt: <content of ../../agents/layer3-analyzer.md>
           + "\n\n## User Query\n" + $ARGUMENTS
 )
 ```
@@ -97,7 +108,113 @@ Wait for all three agents to complete. Each returns structured analysis.
 
 ### Step 4: Cross-Layer Synthesis
 
-With all three results, perform synthesis:
+With all three results, perform synthesis per template below.
+
+---
+
+## Inline Mode (Skills-only Install) - Sequential Execution
+
+**When layer analyzer files are NOT available, execute analysis directly:**
+
+### Step 1: Parse User Query
+
+Same as Agent Mode - extract question, code, and domain hints from `$ARGUMENTS`.
+
+### Step 2: Execute Layer 1 - Language Mechanics
+
+Analyze the Rust language mechanics involved:
+
+```markdown
+## Layer 1: Language Mechanics
+
+**Error/Pattern Identified:**
+- Error code: E0XXX (if applicable)
+- Pattern: ownership/borrowing/lifetime/etc.
+
+**Root Cause:**
+[Explain why this error occurs in terms of Rust's ownership model]
+
+**Language-Level Solutions:**
+1. [Solution 1]: description
+2. [Solution 2]: description
+
+**Confidence:** HIGH | MEDIUM | LOW
+**Reasoning:** [Why this confidence level]
+```
+
+**Focus areas:**
+- Ownership rules (move, copy, borrow)
+- Lifetime annotations
+- Borrowing rules (shared vs mutable)
+- Error codes and their meanings
+
+### Step 3: Execute Layer 2 - Design Choices
+
+Analyze the design patterns and trade-offs:
+
+```markdown
+## Layer 2: Design Choices
+
+**Design Pattern Context:**
+- Current approach: [What pattern is being used]
+- Problem: [Why it conflicts with Rust's rules]
+
+**Design Alternatives:**
+| Pattern | Pros | Cons | When to Use |
+|---------|------|------|-------------|
+| Pattern A | ... | ... | ... |
+| Pattern B | ... | ... | ... |
+
+**Recommended Pattern:**
+[Which pattern fits best and why]
+
+**Confidence:** HIGH | MEDIUM | LOW
+**Reasoning:** [Why this confidence level]
+```
+
+**Focus areas:**
+- Smart pointer choices (Box, Rc, Arc)
+- Interior mutability patterns (Cell, RefCell, Mutex)
+- Ownership transfer vs sharing
+- Cloning vs references
+
+### Step 4: Execute Layer 3 - Domain Constraints
+
+Analyze domain-specific requirements:
+
+```markdown
+## Layer 3: Domain Constraints
+
+**Domain Identified:** [trading/fintech | web | CLI | embedded | etc.]
+
+**Domain-Specific Requirements:**
+- [ ] Performance: [requirements]
+- [ ] Safety: [requirements]
+- [ ] Concurrency: [requirements]
+- [ ] Auditability: [requirements]
+
+**Domain Best Practices:**
+1. [Best practice 1]
+2. [Best practice 2]
+
+**Constraints on Solution:**
+- MUST: [hard requirements]
+- SHOULD: [soft requirements]
+- AVOID: [anti-patterns for this domain]
+
+**Confidence:** HIGH | MEDIUM | LOW
+**Reasoning:** [Why this confidence level]
+```
+
+**Focus areas:**
+- Industry requirements (FinTech regulations, web scalability, etc.)
+- Performance constraints
+- Safety and correctness requirements
+- Common patterns in the domain
+
+### Step 5: Cross-Layer Synthesis
+
+Combine all three layers:
 
 ```markdown
 ## Cross-Layer Synthesis
@@ -133,7 +250,11 @@ With all three results, perform synthesis:
 - **Limiting Factor:** [Which layer had lowest confidence]
 ```
 
+---
+
 ## Output Template
+
+Both modes produce the same output format:
 
 ```markdown
 # Three-Layer Meta-Cognition Analysis
@@ -143,17 +264,17 @@ With all three results, perform synthesis:
 ---
 
 ## Layer 1: Language Mechanics
-[L1 agent result]
+[L1 analysis result]
 
 ---
 
 ## Layer 2: Design Choices
-[L2 agent result]
+[L2 analysis result]
 
 ---
 
 ## Layer 3: Domain Constraints
-[L3 agent result]
+[L3 analysis result]
 
 ---
 
@@ -181,8 +302,10 @@ L1 Mechanism: [Feature]
 
 ---
 
-*Analysis performed by meta-cognition-parallel v0.1.0 (experimental)*
+*Analysis performed by meta-cognition-parallel v0.2.0 (experimental)*
 ```
+
+---
 
 ## Test Scenarios
 
@@ -207,13 +330,23 @@ Expected: L3 identifies Web constraints → L2 suggests connection pooling → L
 
 Expected: L3 identifies CLI constraints → L2 suggests config precedence pattern → L1 recommends builder pattern
 
-## Limitations (Experimental)
+---
 
-- Subagent results are summarized, may lose detail
-- Parallel execution depends on Claude Code version
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Agent files not found | Skills-only install | Use inline mode (sequential) |
+| Agent timeout | Complex analysis | Wait longer or use inline mode |
+| Incomplete layer result | Agent issue | Fill in with inline analysis |
+
+## Limitations
+
+- **Agent Mode:** Parallel execution, faster but requires plugin install
+- **Inline Mode:** Sequential execution, slower but works everywhere
 - Cross-layer synthesis quality depends on result structure
-- May have higher latency than sequential approach
+- May have higher latency than simple single-layer analysis
 
 ## Feedback
 
-This is experimental. Please report issues and suggestions to improve the three-layer parallel analysis approach.
+This is experimental. Please report issues and suggestions to improve the three-layer analysis approach.

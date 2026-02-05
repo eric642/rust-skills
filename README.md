@@ -46,9 +46,73 @@ AI (with Rust Skills):
 
 ## Installation
 
-### Method 1: Marketplace (Recommended)
+Rust Skills supports two installation modes:
 
-Install from Claude Code Plugin Marketplace in two steps:
+- **Plugin Mode** (Claude Code): Full features including hooks, agents, and auto meta-cognition
+- **Skills-only Mode**: Works with any coding agent that supports skills (Claude Code, Vercel AI, etc.)
+
+---
+
+### Skills-only Install (Recommended)
+
+The simplest way to get started. Works with **any coding agent** that supports skills, including Claude Code, [Vercel's `add-skills`](https://github.com/nicepkg/add-skills), and others.
+
+Skills now include **inline fallback logic** — when agent files are not available, skills execute directly using built-in tools (actionbook, agent-browser, WebFetch).
+
+#### Option A: NPX (Easiest)
+
+```bash
+npx skills add ZhangHanDong/rust-skills
+```
+
+#### Option B: CoWork CLI
+
+Install via [CoWork](https://crates.io/crates/cowork), a Rust-based skills management tool:
+
+```bash
+# Install CoWork
+cargo install cowork
+
+# Method 1: Direct install
+cowork install ZhangHanDong/rust-skills
+
+# Method 2: Config-based install (recommended for teams)
+cowork config init                    # Create .cowork/Skills.toml
+# Edit Skills.toml to add rust-skills (see below)
+cowork config install                 # Install all configured skills
+```
+
+**Skills.toml configuration:**
+
+```toml
+[project]
+name = "my-rust-project"
+
+[skills.install]
+rust-skills = "ZhangHanDong/rust-skills"
+
+[security]
+trusted_authors = ["ZhangHanDong"]
+```
+
+> CoWork (`co` for short) provides version management, dependency resolution, lock files, and security auditing. See [CoWork documentation](https://crates.io/crates/cowork) for more details.
+
+#### Option C: Manual Copy
+
+```bash
+git clone https://github.com/ZhangHanDong/rust-skills.git
+cp -r rust-skills/skills/* ~/.claude/skills/
+```
+
+> **Note**: Skills-only mode does not include hooks, so meta-cognition won't trigger automatically. You can manually call `/rust-router` or specific skills. Background agents fall back to inline execution automatically.
+
+---
+
+### Claude Code Plugin Install (Full Features)
+
+For **Claude Code users** who want the complete experience with hooks, background agents, and auto meta-cognition triggering.
+
+#### Option A: Marketplace
 
 ```bash
 # Step 1: Add the marketplace
@@ -60,19 +124,7 @@ Install from Claude Code Plugin Marketplace in two steps:
 
 > **Note**: Step 1 only adds the marketplace (plugin source). Step 2 actually installs the rust-skills plugin with all features enabled.
 
-### Method 2: NPX
-
-Install using npx:
-
-```bash
-npx skills add ZhangHanDong/rust-skills
-```
-
-> ⚠️ **Note**: NPX installs skills only. Rust-skills is a **plugin architecture** that relies on agents, commands, and hooks for full functionality. For the complete experience, use Method 1 (Marketplace) or Method 3 (Full Plugin).
-
-### Method 3: Full Plugin
-
-This method enables **all features including hooks** for automatic meta-cognition triggering.
+#### Option B: Full Plugin (Local)
 
 ```bash
 # Clone the repository
@@ -82,27 +134,18 @@ git clone https://github.com/ZhangHanDong/rust-skills.git
 claude --plugin-dir /path/to/rust-skills
 ```
 
-### Method 4: Skills Only
-
-This method only installs skills without hooks. You need to manually invoke skills.
-
-```bash
-# Clone and copy skills
-git clone https://github.com/ZhangHanDong/rust-skills.git
-cp -r rust-skills/skills/* ~/.claude/skills/
-```
-
-> ⚠️ **Note**: Without hooks, meta-cognition won't trigger automatically. You must manually call `/rust-router` or specific skills.
+---
 
 ### Feature Comparison
 
-| Feature | Marketplace | NPX | Full Plugin | Skills Only |
-|---------|-------------|-----|-------------|-------------|
-| All 31 Skills | ✅ | ✅ | ✅ | ✅ |
-| Auto meta-cognition trigger | ✅ | ✅ | ✅ | ❌ |
-| Hook-based routing | ✅ | ✅ | ✅ | ❌ |
-| Background agents | ✅ | ✅ | ✅ | ✅ |
-| Easy updates | ✅ | ✅ | ❌ | ❌ |
+| Feature | Plugin (Marketplace) | Plugin (Local) | Skills-only (NPX/CoWork/Manual) |
+|---------|---------------------|----------------|--------------------------------|
+| All 31 Skills | ✅ | ✅ | ✅ |
+| Auto meta-cognition trigger | ✅ | ✅ | ❌ (manual invoke) |
+| Hook-based routing | ✅ | ✅ | ❌ |
+| Background agents | ✅ | ✅ | ✅ (inline fallback) |
+| Easy updates | ✅ | ❌ | ✅ (NPX/CoWork) |
+| Works with other agents | ❌ | ❌ | ✅ |
 
 ### Permission Configuration
 
